@@ -1,7 +1,9 @@
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
 const Ajv = require("ajv");
+const ajvFormats = require("ajv-formats"); // Import ajv-formats
 const ajv = new Ajv();
+ajvFormats(ajv); // Use ajv-formats with your AJV instance
 
 // Address Schema
 const addressSchema = new mongoose.Schema({
@@ -86,7 +88,7 @@ const userValidationSchema = {
     },
     email: {
       type: "string",
-      format: "email",
+      format: "email", // Ensure "email" format is recognized
       minLength: 5,
       maxLength: 255,
     },
