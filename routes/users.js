@@ -3,7 +3,7 @@ const router = express.Router();
 const { User, validateUser } = require("../models/user");
 
 // Get all users
-router.get("/users", async (req, res) => {
+router.get("/", async (req, res) => {
   try {
     const users = await User.find(); // Fetch all users from the database
     res.status(200).json(users); // Return users as JSON
@@ -14,7 +14,7 @@ router.get("/users", async (req, res) => {
 });
 
 // Get user by id
-router.get("/users/:id", async (req, res) => {
+router.get("/:id", async (req, res) => {
   const { id } = req.params;
   try {
     const user = await User.findById(id); // Find user by ID
@@ -29,7 +29,7 @@ router.get("/users/:id", async (req, res) => {
 });
 
 // add a user
-router.post("/users/add", async (req, res) => {
+router.post("/add", async (req, res) => {
   try {
     // Validate user input before proceeding
     const valid = validateUser(req.body); // Validate against AJV schema
