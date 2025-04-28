@@ -1,0 +1,300 @@
+const mongoose = require("mongoose");
+const Ajv = require("ajv");
+const ajv = new Ajv();
+
+// Order Item Schema (for individual games in an order)
+const orderItemSchema = new mongoose.Schema(
+  {
+    rawgId: {
+      type: Number,
+      required: true,
+    },
+    name: {
+      type: String,
+      required: true,
+    },
+    slug: {
+      type: String,
+      required: true,
+    },
+    backgroundImage: {
+      type: String,
+      required: true,
+    },
+    quantity: {
+      type: Number,
+      required: true,
+      min: 1,
+      default: 1,
+    },
+    price: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    platform: {
+      type: String,
+      required: true,
+      enum: ["PC", "PlayStation", "Xbox", "Nintendo", "Mobile", "Other"],
+    },
+    region: {
+      type: String,
+      enum: ["NA", "EU", "ASIA", "GLOBAL"],
+      default: "GLOBAL",
+    },
+  },
+  { _id: false }
+);
+
+// Order Schema
+const orderSchema = new mongoose.Schema(
+  {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    items: {
+      type: [orderItemSchema],
+      required: true,
+      validate: {
+        validator: function (v) {
+          return v.length > 0;
+        },
+        message: "Order must have at least one item",
+      },
+    },
+    shippingAddress: {
+      type: {
+        street: String,
+        city: String,
+        state: String,
+        zipCode: String,
+        country: String,
+      },
+      required: true,
+    },
+    billingAddress: {
+      type: {
+        street: String,
+        city: String,
+        state: String,
+        zipCode: String,
+        country: String,
+      },
+      required: false, // Can be same as shipping
+    },
+    payment: {
+      method: {
+        type: String,
+        required: true,
+        enum: ["credit_card", "paypal", "stripe", "crypto"],
+      },
+      transactionId: {
+        type: String,
+        required: true,
+      },
+      status: {
+        type: String,
+        enum: ["pending", "completed", "failed", "refunded"],
+        default: "pending",
+      },
+    },
+    status: {
+      type: String,
+      enum: ["processing", "shipped", "delivered", "cancelled"],
+      default: "processing",
+    },
+    subtotal: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    tax: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    shippingFee: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    discount: {
+      code: String,
+      amount: Number,
+    },
+    total: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    notes: {
+      type: String,
+      maxlength: 500,
+    },
+    metadata: {
+      ipAddress: String,
+      userAgent: String,
+    },
+  },
+  {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
+);
+
+// AJV Validation Schema
+const orderValidationSchema = {
+  type: "object",
+  properties: {
+    user: {
+      type: "string",
+      pattern: "^[0-9a-fA-F]{24}$",
+    },
+    items: {
+      type: "array",
+      minItems: 1,
+      items: {
+        type: "object",
+        properties: {
+          rawgId: { type: "integer" },
+          name: { type: "string" },
+          slug: { type: "string" },
+          backgroundImage: { type: "string", format: "uri" },
+          quantity: { type: "integer", minimum: 1 },
+          price: { type: "number", minimum: 0 },
+          platform: {
+            type: "string",
+            enum: ["PC", "PlayStation", "Xbox", "Nintendo", "Mobile", "Other"],
+          },
+          region: {
+            type: "string",
+            enum: ["NA", "EU", "ASIA", "GLOBAL"],
+          },
+        },
+        required: [
+          "rawgId",
+          "name",
+          "slug",
+          "backgroundImage",
+          "quantity",
+          "price",
+          "platform",
+        ],
+        additionalProperties: false,
+      },
+    },
+    shippingAddress: {
+      type: "object",
+      properties: {
+        street: { type: "string" },
+        city: { type: "string" },
+        state: { type: "string" },
+        zipCode: { type: "string" },
+        country: { type: "string" },
+      },
+      required: ["street", "city", "zipCode", "country"],
+      additionalProperties: false,
+    },
+    billingAddress: {
+      type: "object",
+      properties: {
+        street: { type: "string" },
+        city: { type: "string" },
+        state: { type: "string" },
+        zipCode: { type: "string" },
+        country: { type: "string" },
+      },
+      additionalProperties: false,
+    },
+    payment: {
+      type: "object",
+      properties: {
+        method: {
+          type: "string",
+          enum: ["credit_card", "paypal", "stripe", "crypto"],
+        },
+        transactionId: { type: "string" },
+        status: {
+          type: "string",
+          enum: ["pending", "completed", "failed", "refunded"],
+        },
+      },
+      required: ["method", "transactionId"],
+      additionalProperties: false,
+    },
+    subtotal: { type: "number", minimum: 0 },
+    tax: { type: "number", minimum: 0 },
+    shippingFee: { type: "number", minimum: 0 },
+    discount: {
+      type: "object",
+      properties: {
+        code: { type: "string" },
+        amount: { type: "number", minimum: 0 },
+      },
+      additionalProperties: false,
+    },
+    total: { type: "number", minimum: 0 },
+  },
+  required: [
+    "user",
+    "items",
+    "shippingAddress",
+    "payment",
+    "subtotal",
+    "tax",
+    "shippingFee",
+    "total",
+  ],
+  additionalProperties: false,
+};
+
+// Compile the validation function
+const validateOrder = ajv.compile(orderValidationSchema);
+
+// Virtual for order summary
+orderSchema.virtual("summary").get(function () {
+  return {
+    orderId: this._id,
+    totalItems: this.items.reduce((sum, item) => sum + item.quantity, 0),
+    totalAmount: this.total,
+    status: this.status,
+  };
+});
+
+// Pre-save hook to calculate totals
+orderSchema.pre("save", function (next) {
+  if (this.isModified("items") || this.isModified("discount")) {
+    this.subtotal = this.items.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0
+    );
+    const discountAmount = this.discount?.amount || 0;
+    this.total = this.subtotal + this.tax + this.shippingFee - discountAmount;
+  }
+  next();
+});
+
+// Static method to find orders by user
+orderSchema.statics.findByUser = function (userId) {
+  return this.find({ user: userId }).sort("-createdAt");
+};
+
+// Instance method to cancel order
+orderSchema.methods.cancel = function () {
+  if (this.status !== "delivered") {
+    this.status = "cancelled";
+    this.payment.status = "refunded";
+    return this.save();
+  }
+  throw new Error("Delivered orders cannot be cancelled");
+};
+
+const Order = mongoose.model("Order", orderSchema);
+
+module.exports = {
+  Order,
+  validateOrder,
+};
