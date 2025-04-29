@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const { Game, validateGame } = require("../models/game");
+const Game = require("../models/game");
+const { validateGame } = require("../validation/game.validation");
 
 //Get all games
 router.get("/", async (req, res) => {

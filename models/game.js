@@ -88,38 +88,6 @@ const gameItemSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// --- AJV Schema ---
-const gameValidationSchema = {
-  type: "object",
-  properties: {
-    rawgId: { type: "integer" },
-    slug: { type: "string" },
-    name: { type: "string" },
-    released: { type: "string", format: "date" },
-    backgroundImage: { type: "string", format: "uri" },
-    rating: { type: "number" },
-    ratingTop: { type: "number" },
-    ratingsCount: { type: "integer" },
-    metacritic: { type: "integer" },
-    reviewsCount: { type: "integer" },
-    platforms: { type: "array" },
-    parentPlatforms: { type: "array" },
-    stores: { type: "array" },
-    tags: { type: "array" },
-    esrbRating: { type: "object" },
-    shortScreenshots: { type: "array" },
-    trailers: { type: "array" },
-  },
-  required: ["slug", "name"],
-  additionalProperties: true, // allow extra fields for future proof
-};
-
-const validateGame = ajv.compile(gameValidationSchema);
-
-// --- Export ---
 const Game = mongoose.model("Game", gameItemSchema);
 
-module.exports = {
-  Game,
-  validateGame,
-};
+module.exports = Game;
