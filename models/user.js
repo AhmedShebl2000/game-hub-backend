@@ -1,37 +1,9 @@
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
 const Ajv = require("ajv");
-const ajvFormats = require("ajv-formats"); // Import ajv-formats
+const ajvFormats = require("ajv-formats");
 const ajv = new Ajv();
-ajvFormats(ajv); // Use ajv-formats with your AJV instance
-
-// Address Schema
-const addressSchema = new mongoose.Schema({
-  city: {
-    type: String,
-    required: true,
-    minlength: 2,
-    maxlength: 50,
-  },
-  street: {
-    type: String,
-    required: true,
-    minlength: 2,
-    maxlength: 100,
-  },
-  zipCode: {
-    type: String,
-    required: true,
-  },
-  apartmentNumber: {
-    type: String,
-    required: false, // False as it's often optional
-  },
-  buildingNumber: {
-    type: String,
-    required: true,
-  },
-});
+ajvFormats(ajv);
 
 // User Schema
 const userSchema = new mongoose.Schema({
@@ -58,7 +30,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     minlength: 5,
-    maxlength: 20,
+    maxlength: 255,
   },
   phone: {
     type: String,
@@ -66,9 +38,9 @@ const userSchema = new mongoose.Schema({
     minlength: 10,
     maxlength: 15,
   },
-  address: {
-    type: addressSchema,
-    required: true,
+  isAdmin: {
+    type: Boolean,
+    default: false,
   },
 });
 
@@ -102,27 +74,8 @@ const userValidationSchema = {
       minLength: 10,
       maxLength: 15,
     },
-    address: {
-      type: "object",
-      properties: {
-        city: { type: "string", minLength: 2, maxLength: 50 },
-        street: { type: "string", minLength: 2, maxLength: 100 },
-        zipCode: { type: "string" },
-        apartmentNumber: { type: "string" },
-        buildingNumber: { type: "string" },
-      },
-      required: ["city", "street", "zipCode", "buildingNumber"],
-      additionalProperties: false,
-    },
   },
-  required: [
-    "first_name",
-    "last_name",
-    "email",
-    "password",
-    "phone",
-    "address",
-  ],
+  required: ["first_name", "last_name", "email", "password", "phone"],
   additionalProperties: false,
 };
 
@@ -131,7 +84,10 @@ const validateUser = ajv.compile(userValidationSchema);
 
 // JWT Token Generation Method
 userSchema.methods.generateAuthToken = function () {
-  const token = jwt.sign({ _id: this._id }, process.env.SECRET_KEY);
+  const token = jwt.sign(
+    { _id: this._id, isAdmin: this.isAdmin },
+    process.env.SECRET_KEY
+  );
   return token;
 };
 

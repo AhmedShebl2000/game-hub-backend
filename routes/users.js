@@ -1,11 +1,15 @@
 const express = require("express");
 const router = express.Router();
 const { User, validateUser } = require("../models/user");
+const _ = require("lodash");
+const bcrypt = require("bcrypt");
+const admin = require("../middleware/admin");
+const auth = require("../middleware/auth");
 
 // Get all users
-router.get("/", async (req, res) => {
+router.get("/", [auth, admin], async (req, res) => {
   try {
-    const users = await User.find(); // Fetch all users from the database
+    const users = await User.find().select("-password"); // Fetch all users from the database
     res.status(200).json(users); // Return users as JSON
   } catch (error) {
     console.error(error);
@@ -14,10 +18,10 @@ router.get("/", async (req, res) => {
 });
 
 // Get user by id
-router.get("/:id", async (req, res) => {
+router.get("/:id", auth, async (req, res) => {
   const { id } = req.params;
   try {
-    const user = await User.findById(id); // Find user by ID
+    const user = await User.findById(id).select("-password"); // Find user by ID
     if (!user) {
       return res.status(404).json({ message: "User not found" }); // If user is not found
     }
@@ -29,35 +33,24 @@ router.get("/:id", async (req, res) => {
 });
 
 // add a user
-router.post("/add", async (req, res) => {
-  try {
-    // Validate user input before proceeding
-    const valid = validateUser(req.body); // Validate against AJV schema
-    if (!valid) {
-      return res.status(400).json({
-        message: "Validation failed",
-        errors: validateUser.errors, // Return the AJV validation errors
-      });
-    }
+router.post("/", async (req, res) => {
+  const { error } = validateUser(req.body);
+  if (error) return res.status(400).send(error.details[0].message);
 
-    // If validation passes, proceed to create a new user
-    const { first_name, last_name, email, password, phone, address } = req.body;
-    const newUser = new User({
-      first_name,
-      last_name,
-      email,
-      password,
-      phone,
-      address,
-    });
+  let user = await User.findOne({ email: req.body.email });
+  if (user) return res.status(400).send("User already registered.");
 
-    await newUser.save();
+  user = new User(
+    _.pick(req.body, ["first_name", "last_name", "email", "password", "phone"])
+  );
+  const salt = await bcrypt.genSalt(10);
+  user.password = await bcrypt.hash(user.password, salt);
+  await user.save();
 
-    res.status(201).json({ message: "New user added", user: newUser });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "Error adding user" });
-  }
+  const token = user.generateAuthToken();
+  res
+    .header("x-auth-token", token)
+    .send(_.pick(user, ["_id", "first_name", "last_name", "email", "phone"]));
 });
 
 module.exports = router;
