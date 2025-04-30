@@ -2,36 +2,15 @@ const mongoose = require("mongoose");
 const Ajv = require("ajv");
 const ajv = new Ajv();
 
-// Order Item Schema (for individual games in an order)
+// Order Item Schema
 const orderItemSchema = new mongoose.Schema(
   {
-    rawgId: {
-      type: Number,
-      required: true,
-    },
-    name: {
-      type: String,
-      required: true,
-    },
-    slug: {
-      type: String,
-      required: true,
-    },
-    backgroundImage: {
-      type: String,
-      required: true,
-    },
-    quantity: {
-      type: Number,
-      required: true,
-      min: 1,
-      default: 1,
-    },
-    price: {
-      type: Number,
-      required: true,
-      min: 0,
-    },
+    rawgId: { type: Number, required: true },
+    name: { type: String, required: true },
+    slug: { type: String, required: true },
+    backgroundImage: { type: String, required: true },
+    quantity: { type: Number, required: true, min: 1, default: 1 },
+    price: { type: Number, required: true, min: 0 },
     platform: {
       type: String,
       required: true,
@@ -64,26 +43,7 @@ const orderSchema = new mongoose.Schema(
         message: "Order must have at least one item",
       },
     },
-    shippingAddress: {
-      type: {
-        street: String,
-        city: String,
-        state: String,
-        zipCode: String,
-        country: String,
-      },
-      required: true,
-    },
-    billingAddress: {
-      type: {
-        street: String,
-        city: String,
-        state: String,
-        zipCode: String,
-        country: String,
-      },
-      required: false, // Can be same as shipping
-    },
+
     payment: {
       method: {
         type: String,
@@ -105,30 +65,13 @@ const orderSchema = new mongoose.Schema(
       enum: ["processing", "shipped", "delivered", "cancelled"],
       default: "processing",
     },
-    subtotal: {
-      type: Number,
-      required: true,
-      min: 0,
-    },
-    tax: {
-      type: Number,
-      required: true,
-      min: 0,
-    },
-    shippingFee: {
-      type: Number,
-      required: true,
-      min: 0,
-    },
+    subtotal: { type: Number, required: true, min: 0 },
+    tax: { type: Number, required: true, min: 0 },
     discount: {
       code: String,
       amount: Number,
     },
-    total: {
-      type: Number,
-      required: true,
-      min: 0,
-    },
+    total: { type: Number, required: true, min: 0 },
     notes: {
       type: String,
       maxlength: 500,
@@ -145,14 +88,11 @@ const orderSchema = new mongoose.Schema(
   }
 );
 
-// AJV Validation Schema
+// AJV Validation Schema (shippingFee and shippingAddress removed)
 const orderValidationSchema = {
   type: "object",
   properties: {
-    user: {
-      type: "string",
-      pattern: "^[0-9a-fA-F]{24}$",
-    },
+    user: { type: "string", pattern: "^[0-9a-fA-F]{24}$" },
     items: {
       type: "array",
       minItems: 1,
@@ -186,29 +126,7 @@ const orderValidationSchema = {
         additionalProperties: false,
       },
     },
-    shippingAddress: {
-      type: "object",
-      properties: {
-        street: { type: "string" },
-        city: { type: "string" },
-        state: { type: "string" },
-        zipCode: { type: "string" },
-        country: { type: "string" },
-      },
-      required: ["street", "city", "zipCode", "country"],
-      additionalProperties: false,
-    },
-    billingAddress: {
-      type: "object",
-      properties: {
-        street: { type: "string" },
-        city: { type: "string" },
-        state: { type: "string" },
-        zipCode: { type: "string" },
-        country: { type: "string" },
-      },
-      additionalProperties: false,
-    },
+
     payment: {
       type: "object",
       properties: {
@@ -227,7 +145,6 @@ const orderValidationSchema = {
     },
     subtotal: { type: "number", minimum: 0 },
     tax: { type: "number", minimum: 0 },
-    shippingFee: { type: "number", minimum: 0 },
     discount: {
       type: "object",
       properties: {
@@ -238,23 +155,13 @@ const orderValidationSchema = {
     },
     total: { type: "number", minimum: 0 },
   },
-  required: [
-    "user",
-    "items",
-    "shippingAddress",
-    "payment",
-    "subtotal",
-    "tax",
-    "shippingFee",
-    "total",
-  ],
+  required: ["user", "items", "payment", "subtotal", "tax", "total"],
   additionalProperties: false,
 };
 
-// Compile the validation function
 const validateOrder = ajv.compile(orderValidationSchema);
 
-// Virtual for order summary
+// Virtual for summary
 orderSchema.virtual("summary").get(function () {
   return {
     orderId: this._id,
@@ -264,7 +171,7 @@ orderSchema.virtual("summary").get(function () {
   };
 });
 
-// Pre-save hook to calculate totals
+// Pre-save hook (updated total calculation)
 orderSchema.pre("save", function (next) {
   if (this.isModified("items") || this.isModified("discount")) {
     this.subtotal = this.items.reduce(
@@ -272,17 +179,16 @@ orderSchema.pre("save", function (next) {
       0
     );
     const discountAmount = this.discount?.amount || 0;
-    this.total = this.subtotal + this.tax + this.shippingFee - discountAmount;
+    this.total = this.subtotal + this.tax - discountAmount;
   }
   next();
 });
 
-// Static method to find orders by user
+// Static & Instance Methods
 orderSchema.statics.findByUser = function (userId) {
   return this.find({ user: userId }).sort("-createdAt");
 };
 
-// Instance method to cancel order
 orderSchema.methods.cancel = function () {
   if (this.status !== "delivered") {
     this.status = "cancelled";

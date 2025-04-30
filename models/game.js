@@ -73,7 +73,7 @@ const gameItemSchema = new mongoose.Schema(
     backgroundImage: { type: String },
     rating: { type: Number },
     ratingTop: { type: Number },
-    ratings: { type: [Object] }, // could be made more detailed later
+    ratings: { type: [Object] },
     ratingsCount: { type: Number },
     metacritic: { type: Number },
     reviewsCount: { type: Number },
@@ -83,7 +83,10 @@ const gameItemSchema = new mongoose.Schema(
     tags: { type: [tagSchema], default: [] },
     esrbRating: { type: esrbRatingSchema },
     shortScreenshots: { type: [screenshotSchema], default: [] },
-    trailers: { type: [trailerSchema], default: [] }, // to store multiple trailers/clips
+    trailers: { type: [trailerSchema], default: [] },
+
+    // 🔹 New field to track purchases
+    purchaseCount: { type: Number, default: 0, min: 0 },
   },
   { timestamps: true }
 );

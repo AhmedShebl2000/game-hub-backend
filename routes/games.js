@@ -3,14 +3,31 @@ const router = express.Router();
 const Game = require("../models/game");
 const { validateGame } = require("../validation/game.validation");
 
-//Get all games
+// Get all games with pagination
+// Now the endpoint is: GET /api/games?page=2&limit=20
 router.get("/", async (req, res) => {
   try {
-    const games = await Game.find();
-    res.status(200).json(games);
+    // Parse page and limit from query params, with defaults
+    const page = parseInt(req.query.page) || 1; // default to page 1
+    const limit = parseInt(req.query.limit) || 20; // default to 20 items per page
+
+    const skip = (page - 1) * limit;
+
+    // Fetch total count for pagination metadata
+    const totalGames = await Game.countDocuments();
+
+    // Fetch paginated games
+    const games = await Game.find().skip(skip).limit(limit);
+
+    res.status(200).json({
+      currentPage: page,
+      totalPages: Math.ceil(totalGames / limit),
+      totalItems: totalGames,
+      games,
+    });
   } catch (error) {
     console.log(error);
-    return res.status(400).json({ message: "Error fetching games", error });
+    res.status(500).json({ message: "Error fetching games", error });
   }
 });
 
