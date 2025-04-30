@@ -9,7 +9,6 @@ const orderItemSchema = new mongoose.Schema(
     name: { type: String, required: true },
     slug: { type: String, required: true },
     backgroundImage: { type: String, required: true },
-    quantity: { type: Number, required: true, min: 1, default: 1 },
     price: { type: Number, required: true, min: 0 },
     platform: {
       type: String,
@@ -103,7 +102,6 @@ const orderValidationSchema = {
           name: { type: "string" },
           slug: { type: "string" },
           backgroundImage: { type: "string", format: "uri" },
-          quantity: { type: "integer", minimum: 1 },
           price: { type: "number", minimum: 0 },
           platform: {
             type: "string",
@@ -119,7 +117,6 @@ const orderValidationSchema = {
           "name",
           "slug",
           "backgroundImage",
-          "quantity",
           "price",
           "platform",
         ],
@@ -165,7 +162,7 @@ const validateOrder = ajv.compile(orderValidationSchema);
 orderSchema.virtual("summary").get(function () {
   return {
     orderId: this._id,
-    totalItems: this.items.reduce((sum, item) => sum + item.quantity, 0),
+    totalItems: this.items.reduce((sum, item) => sum, 0),
     totalAmount: this.total,
     status: this.status,
   };
@@ -174,10 +171,7 @@ orderSchema.virtual("summary").get(function () {
 // Pre-save hook (updated total calculation)
 orderSchema.pre("save", function (next) {
   if (this.isModified("items") || this.isModified("discount")) {
-    this.subtotal = this.items.reduce(
-      (sum, item) => sum + item.price * item.quantity,
-      0
-    );
+    this.subtotal = this.items.reduce((sum, item) => sum + item.price, 0);
     const discountAmount = this.discount?.amount || 0;
     this.total = this.subtotal + this.tax - discountAmount;
   }
