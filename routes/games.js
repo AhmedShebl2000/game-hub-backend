@@ -6,23 +6,37 @@ const { validateGame } = require("../validation/game.validation");
 // Get all games with pagination
 // Now the endpoint is: GET /api/games?page=2&limit=20
 router.get("/", async (req, res) => {
-  const { page = 1, limit = 10 } = req.query; // Default to page 1 and limit 10 if not provided
-  const skip = (page - 1) * limit; // Calculate the number of documents to skip
-
   try {
-    const games = await Game.find().skip(skip).limit(Number(limit)); // Convert limit to a number
-    const totalGames = await Game.countDocuments(); // Get the total number of games
+    // Convert to numbers and set defaults
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.max(1, parseInt(req.query.limit) || 10);
+
+    const skip = (page - 1) * limit;
+
+    // Execute both queries in parallel for better performance
+    const [games, totalGames] = await Promise.all([
+      Game.find().skip(skip).limit(limit).lean(),
+      Game.countDocuments(),
+    ]);
 
     res.status(200).json({
       totalGames,
       totalPages: Math.ceil(totalGames / limit),
-      currentPage: Number(page),
+      currentPage: page,
       games,
     });
   } catch (error) {
-    console.log(error);
-    return res.status(400).json({ message: "Error fetching games", error });
+    console.error("Pagination error:", error);
+    return res.status(500).json({
+      message: "Error fetching games",
+      error: error.message,
+    });
   }
+});
+
+router.get("/test", async (req, res) => {
+  const games = await Game.find().limit(5); // Force limit 5
+  return res.json(games);
 });
 
 //Get a game by name
