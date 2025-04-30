@@ -46,21 +46,6 @@ router.get("/name", async (req, res) => {
   }
 });
 
-//Get a game by id
-router.get("/:id", async (req, res) => {
-  const { id } = req.params;
-  try {
-    const game = await Game.findById(id);
-    if (!game) {
-      return res.status(404).json({ message: "Game not found" }); // If game is not found
-    }
-    res.status(200).json(game);
-  } catch (error) {
-    console.log(error);
-    return res.status(400).json({ message: "Error fetching game", error });
-  }
-});
-
 // Add a game
 router.post("/add", async (req, res) => {
   const gameData = req.body;
@@ -86,6 +71,21 @@ router.post("/add", async (req, res) => {
     return res
       .status(500)
       .json({ message: "Error adding game", error: error.message });
+  }
+});
+
+//Get a game by id
+router.get("/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const game = await Game.findById(id);
+    if (!game) {
+      return res.status(404).json({ message: "Game not found" }); // If game is not found
+    }
+    res.status(200).json(game);
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ message: "Error fetching game", error });
   }
 });
 
