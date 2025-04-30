@@ -7,19 +7,41 @@ const { validateGame } = require("../validation/game.validation");
 // Now the endpoint is: GET /api/games?page=2&limit=20
 router.get("/", async (req, res) => {
   try {
-    // Validate inputs
     const page = Math.max(1, parseInt(req.query.page) || 1);
-    const limit = Math.min(50, Math.max(1, parseInt(req.query.limit) || 10)); // Max 50 per page
+    const limit = Math.min(50, Math.max(1, parseInt(req.query.limit) || 10));
+    const sortOption = req.query.sort?.toLowerCase();
+    const platformFilter = req.query.platform?.toLowerCase(); // Example: "pc", "xbox"
 
-    // Debug logging
-    console.log(`Executing pagination: page=${page}, limit=${limit}`);
+    // Mapping for sorting options
+    const sortMap = {
+      name: { name: 1 },
+      releasedate: { released: -1 },
+      popularity: { ratingsCount: -1 },
+      average_rating: { rating: -1 },
+    };
+
+    const sort = sortMap[sortOption] || {}; // Default = relevance (unsorted)
+    const filter = {};
+
+    // Platform filtering
+    if (platformFilter && platformFilter !== "all") {
+      // Filter against platform slug in parentPlatforms array
+      filter["parentPlatforms.slug"] = platformFilter;
+    }
+
+    console.log(
+      `Pagination: page=${page}, limit=${limit}, sort=${sortOption}, platform=${
+        platformFilter || "all"
+      }`
+    );
 
     const [games, total] = await Promise.all([
-      Game.find()
+      Game.find(filter)
+        .sort(sort)
         .skip((page - 1) * limit)
         .limit(limit)
         .lean(),
-      Game.countDocuments(),
+      Game.countDocuments(filter),
     ]);
 
     return res.json({
@@ -29,6 +51,8 @@ router.get("/", async (req, res) => {
         pages: Math.ceil(total / limit),
         page,
         limit,
+        sort: sortOption || "relevance",
+        platform: platformFilter || "all",
       },
     });
   } catch (error) {
