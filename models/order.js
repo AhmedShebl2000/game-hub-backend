@@ -1,6 +1,8 @@
 const mongoose = require("mongoose");
 const Ajv = require("ajv");
+const ajvFormats = require("ajv-formats");
 const ajv = new Ajv();
+ajvFormats(ajv); // Allow email, uri, etc. formats
 
 // Order Item Schema
 const orderItemSchema = new mongoose.Schema(
@@ -157,40 +159,6 @@ const orderValidationSchema = {
 };
 
 const validateOrder = ajv.compile(orderValidationSchema);
-
-// Virtual for summary
-orderSchema.virtual("summary").get(function () {
-  return {
-    orderId: this._id,
-    totalItems: this.items.reduce((sum, item) => sum, 0),
-    totalAmount: this.total,
-    status: this.status,
-  };
-});
-
-// Pre-save hook (updated total calculation)
-orderSchema.pre("save", function (next) {
-  if (this.isModified("items") || this.isModified("discount")) {
-    this.subtotal = this.items.reduce((sum, item) => sum + item.price, 0);
-    const discountAmount = this.discount?.amount || 0;
-    this.total = this.subtotal + this.tax - discountAmount;
-  }
-  next();
-});
-
-// Static & Instance Methods
-orderSchema.statics.findByUser = function (userId) {
-  return this.find({ user: userId }).sort("-createdAt");
-};
-
-orderSchema.methods.cancel = function () {
-  if (this.status !== "delivered") {
-    this.status = "cancelled";
-    this.payment.status = "refunded";
-    return this.save();
-  }
-  throw new Error("Delivered orders cannot be cancelled");
-};
 
 const Order = mongoose.model("Order", orderSchema);
 

@@ -1,7 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const Order = require("../models/order");
-const { validateOrder } = require("../validation/order.validation");
+const { Order, validateOrder } = require("../models/order");
 
 //get all orders
 router.get("/", async (req, res) => {
@@ -83,3 +82,5 @@ router.delete("/:id", async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
+
+module.exports = router;
