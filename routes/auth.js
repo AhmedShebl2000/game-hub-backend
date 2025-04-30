@@ -1,5 +1,5 @@
 const bcrypt = require("bcrypt");
-const User = require("../models/user");
+const { User } = require("../models/user");
 const express = require("express");
 const router = express.Router();
 const { validateLoginRequest } = require("../validation/login.validation");
