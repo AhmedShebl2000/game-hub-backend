@@ -11,13 +11,23 @@ router.get("/", async (req, res) => {
     const page = parseInt(req.query.page) || 1; // default to page 1
     const limit = parseInt(req.query.limit) || 20; // default to 20 items per page
 
+    // Validate page and limit (should be positive numbers)
+    if (page < 1 || limit < 1) {
+      return res
+        .status(400)
+        .json({ message: "Page and limit must be positive numbers" });
+    }
+
     const skip = (page - 1) * limit;
 
-    // Fetch total count for pagination metadata
-    const totalGames = await Game.countDocuments();
+    // Create the query (without executing it yet)
+    const query = Game.find();
 
-    // Fetch paginated games
-    const games = await Game.find().skip(skip).limit(limit);
+    // Fetch total count for pagination metadata
+    const totalGames = await Game.countDocuments(query);
+
+    // Execute the query with skip and limit
+    const games = await query.skip(skip).limit(limit).exec();
 
     res.status(200).json({
       currentPage: page,
@@ -27,7 +37,9 @@ router.get("/", async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: "Error fetching games", error });
+    res
+      .status(500)
+      .json({ message: "Error fetching games", error: error.message });
   }
 });
 
