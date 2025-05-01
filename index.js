@@ -16,8 +16,6 @@ require("./startup/prod")(app);
 require("./startup/db")();
 require("./startup/routes")(app);
 
-// ✅ Do NOT call app.listen() on Vercel
-// Instead, export the serverless handler
 module.exports = app;
 module.exports.handler = serverless(app);
 
