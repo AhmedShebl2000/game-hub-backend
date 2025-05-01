@@ -15,7 +15,12 @@ require("./startup/prod")(app);
 require("./startup/db")();
 require("./startup/routes")(app);
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+// ✅ Do NOT call app.listen() on Vercel
+// Instead, export the serverless handler
+module.exports = app;
+module.exports.handler = serverless(app);
+
+// const PORT = process.env.PORT || 5000;
+// app.listen(PORT, () => {
+//   console.log(`Server running on port ${PORT}`);
+// });
