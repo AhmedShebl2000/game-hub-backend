@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
+const crypto = require("crypto");
 
 // User Schema
 const userSchema = new mongoose.Schema({
@@ -38,6 +39,16 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+
+  // 🔐 For Forgot Password
+  resetToken: {
+    type: String,
+    default: null,
+  },
+  resetTokenExpiry: {
+    type: Date,
+    default: null,
+  },
 });
 
 // JWT Token Generation Method
@@ -46,6 +57,14 @@ userSchema.methods.generateAuthToken = function () {
     { _id: this._id, isAdmin: this.isAdmin },
     process.env.SECRET_KEY
   );
+  return token;
+};
+
+// ✅ Add this method to generate a reset token
+userSchema.methods.generatePasswordResetToken = function () {
+  const token = crypto.randomBytes(32).toString("hex");
+  this.resetToken = crypto.createHash("sha256").update(token).digest("hex");
+  this.resetTokenExpiry = Date.now() + 1000 * 60 * 60; // 1 hour
   return token;
 };
 
