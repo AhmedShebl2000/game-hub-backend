@@ -9,34 +9,38 @@ router.get("/", async (req, res) => {
   try {
     const page = Math.max(1, parseInt(req.query.page) || 1);
     const limit = Math.min(50, Math.max(1, parseInt(req.query.limit) || 10));
-    const sortOption = req.query.sort?.toLowerCase();
-    const platformFilter = req.query.platform?.toLowerCase(); // Example: "pc", "xbox"
 
-    // Mapping for sorting options
-    const sortMap = {
-      name: { name: 1 },
-      releasedate: { released: -1 },
-      popularity: { ratingsCount: -1 },
-      average_rating: { rating: -1 },
-    };
+    const rawSort = req.query.sort?.toLowerCase(); // e.g., "-name" or "name"
+    let sort = {};
 
-    const sort = sortMap[sortOption] || {}; // Default = relevance (unsorted)
+    if (rawSort) {
+      const direction = rawSort.startsWith("-") ? -1 : 1;
+      const key = rawSort.replace("-", "");
+
+      const sortMap = {
+        name: "name",
+        releasedate: "released",
+        popularity: "ratingsCount",
+        average_rating: "rating",
+      };
+
+      if (sortMap[key]) {
+        sort = { [sortMap[key]]: direction }; // gonna use it in future
+      }
+    }
+
+    const platformFilter = req.query.platform?.toLowerCase();
     const filter = {};
 
-    // Platform filtering
     if (platformFilter && platformFilter !== "all") {
-      // Filter against platform slug in parentPlatforms array
       filter["parentPlatforms.slug"] = platformFilter;
     }
 
-    console.log(
-      `Pagination: page=${page}, limit=${limit}, sort=${sortOption}, platform=${
-        platformFilter || "all"
-      }`
-    );
+    console.log(`Page=${page}, Limit=${limit}, Sort=${JSON.stringify(sort)}, Platform=${platformFilter || "all"}`);
 
     const [games, total] = await Promise.all([
       Game.find(filter)
+        .collation({ locale: "en", strength: 2 }) // Case-insensitive sorting
         .sort(sort)
         .skip((page - 1) * limit)
         .limit(limit)
@@ -51,7 +55,7 @@ router.get("/", async (req, res) => {
         pages: Math.ceil(total / limit),
         page,
         limit,
-        sort: sortOption || "relevance",
+        sort: rawSort || "relevance",
         platform: platformFilter || "all",
       },
     });
