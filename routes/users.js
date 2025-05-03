@@ -36,22 +36,18 @@ router.get("/:id", auth, async (req, res) => {
 // add a user
 router.post("/", async (req, res) => {
   const { error } = validateUser(req.body);
-  if (error) return res.status(400).send(error.details[0].message);
+  if (error) return res.status(400).json({ errMessage: error.details[0].message });
 
   let user = await User.findOne({ email: req.body.email });
-  if (user) return res.status(400).send("User already registered.");
+  if (user) return res.status(400).json({ errMessage: "User already registered." });
 
-  user = new User(
-    _.pick(req.body, ["first_name", "last_name", "email", "password", "phone"])
-  );
+  user = new User(_.pick(req.body, ["first_name", "last_name", "email", "password", "phone"]));
   const salt = await bcrypt.genSalt(10);
   user.password = await bcrypt.hash(user.password, salt);
   await user.save();
 
   const token = user.generateAuthToken();
-  res
-    .header("x-auth-token", token)
-    .send(_.pick(user, ["_id", "first_name", "last_name", "email", "phone"]));
+  res.header("x-auth-token", token).send(_.pick(user, ["_id", "first_name", "last_name", "email", "phone"]));
 });
 
 module.exports = router;
