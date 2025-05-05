@@ -19,6 +19,7 @@ exports.getGames = async (req, res) => {
         releasedate: "released",
         popularity: "ratingsCount",
         average_rating: "rating",
+        price: "rating",
       };
 
       if (sortMap[key]) {
@@ -33,7 +34,11 @@ exports.getGames = async (req, res) => {
       filter["parentPlatforms.slug"] = platformFilter;
     }
 
-    console.log(`Page=${page}, Limit=${limit}, Sort=${JSON.stringify(sort)}, Platform=${platformFilter || "all"}`);
+    console.log(
+      `Page=${page}, Limit=${limit}, Sort=${JSON.stringify(sort)}, Platform=${
+        platformFilter || "all"
+      }`
+    );
 
     const [games, total] = await Promise.all([
       Game.find(filter)
@@ -87,7 +92,9 @@ exports.addGame = async (req, res) => {
   // Validate the incoming data using AJV
   const valid = validateGame(gameData);
   if (!valid) {
-    return res.status(400).json({ message: "Validation failed", errors: validateGame.errors });
+    return res
+      .status(400)
+      .json({ message: "Validation failed", errors: validateGame.errors });
   }
 
   try {
@@ -100,7 +107,9 @@ exports.addGame = async (req, res) => {
     res.status(201).json({ message: "Game added successfully", game: newGame });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: "Error adding game", error: error.message });
+    return res
+      .status(500)
+      .json({ message: "Error adding game", error: error.message });
   }
 };
 
@@ -130,6 +139,8 @@ exports.deleteGame = async (req, res) => {
     res.status(200).json({ message: "Game deleted Successfully" });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ message: "Failed to delete game", error: error.message });
+    return res
+      .status(500)
+      .json({ message: "Failed to delete game", error: error.message });
   }
 };

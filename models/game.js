@@ -87,6 +87,12 @@ const gameItemSchema = new mongoose.Schema(
 
     // 🔹 New field to track purchases
     purchaseCount: { type: Number, default: 0, min: 0 },
+    price: {
+      type: Number,
+      required: true,
+      min: 0, // Price can't be negative
+      default: 0, // Default to free if not specified
+    },
   },
   { timestamps: true }
 );

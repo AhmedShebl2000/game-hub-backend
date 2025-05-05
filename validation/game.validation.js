@@ -40,6 +40,12 @@ const gameValidationSchema = {
     ratingsCount: { type: "integer" },
     metacritic: { type: "integer" },
     reviewsCount: { type: "integer" },
+    price: {
+      type: "number",
+      minimum: 0,
+      maximum: 10000, // Adjust maximum price as needed
+      multipleOf: 0.01, // Ensures exactly 2 decimal places
+    },
     platforms: {
       type: "array",
       items: platformSchema,
