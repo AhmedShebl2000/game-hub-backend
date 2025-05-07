@@ -13,8 +13,9 @@ router.get("/name", gameController.getGameByName);
 // Add a game
 router.post("/add", gameController.addGame);
 
-//Get a game by id
-router.get("/:id", gameController.getGameById);
+//Get a game by slug name
+router.get("/:slug", gameController.getGameBySlugName);
+
 
 // Delete a game by id
 router.delete("/:id", gameController.deleteGame);

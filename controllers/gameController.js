@@ -113,18 +113,18 @@ exports.addGame = async (req, res) => {
   }
 };
 
-//Get a game by id
-exports.getGameById = async (req, res) => {
-  const { id } = req.params;
+//Get a game by slug name
+exports.getGameBySlugName = async (req, res) => {
+  const { slug } = req.params;
   try {
-    const game = await Game.findById(id);
+    const game = await Game.findOne({ slug });
     if (!game) {
-      return res.status(404).json({ message: "Game not found" }); // If game is not found
+      return res.status(404).json({ message: "Game not found" });
     }
     res.status(200).json(game);
   } catch (error) {
-    console.log(error);
-    return res.status(400).json({ message: "Error fetching game", error });
+    console.error(error);
+    res.status(500).json({ message: "Error fetching game by slug", error });
   }
 };
 
