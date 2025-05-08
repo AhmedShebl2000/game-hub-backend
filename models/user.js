@@ -40,7 +40,7 @@ const userSchema = new mongoose.Schema({
     default: false,
   },
 
-  // 🔐 For Forgot Password
+  //For Forgot Password
   resetToken: {
     type: String,
     default: null,
@@ -49,6 +49,14 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: null,
   },
+
+  //For wishllist
+  wishlist: [
+    {
+      type: [String],
+      default: [],
+    },
+  ],
 });
 
 // JWT Token Generation Method
