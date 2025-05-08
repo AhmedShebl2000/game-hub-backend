@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const Ajv = require("ajv");
 const ajvFormats = require("ajv-formats");
 const ajv = new Ajv();
@@ -34,6 +35,9 @@ const userValidationSchema = {
     },
     wishlist: {
       type: "array",
+      items: {
+        type: "string",
+      },
     },
   },
   required: ["first_name", "last_name", "email", "password", "phone"],

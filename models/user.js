@@ -51,12 +51,10 @@ const userSchema = new mongoose.Schema({
   },
 
   //For wishllist
-  wishlist: [
-    {
-      type: [String],
-      default: [],
-    },
-  ],
+  wishlist: {
+    type: [String],
+    default: [],
+  },
 });
 
 // JWT Token Generation Method
