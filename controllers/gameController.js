@@ -144,3 +144,18 @@ exports.deleteGame = async (req, res) => {
       .json({ message: "Failed to delete game", error: error.message });
   }
 };
+
+// Get a game by ID
+exports.getGameById = async (req, res) => {
+  const { rawgId } = req.params;
+  try {
+    const game = await Game.findOne({ rawgId: Number(rawgId) });
+    if (!game) {
+      return res.status(404).json({ message: "Game not found" });
+    }
+    res.status(200).json(game);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error fetching game by rawgId", error });
+  }
+};
