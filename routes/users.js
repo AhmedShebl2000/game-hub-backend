@@ -109,4 +109,32 @@ router.post("/", async (req, res) => {
     .send(_.pick(user, ["_id", "first_name", "last_name", "email", "phone"]));
 });
 
+// Remove game from wishlist
+router.delete("/wishlist/:gameId", auth, async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { gameId } = req.params;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const index = user.wishlist.indexOf(gameId);
+    if (index === -1) {
+      return res.status(404).json({ message: "Game not found in wishlist" });
+    }
+
+    user.wishlist.splice(index, 1);
+    await user.save();
+
+    return res
+      .status(200)
+      .json({ message: "Game removed from wishlist", wishlist: user.wishlist });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Server error", error });
+  }
+});
+
 module.exports = router;
