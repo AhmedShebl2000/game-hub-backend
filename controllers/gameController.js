@@ -1,5 +1,6 @@
 const Game = require("../models/game");
 const { validateGame } = require("../validation/game.validation");
+const axios = require("axios");
 
 // Get all games with pagination
 exports.getGames = async (req, res) => {
@@ -34,11 +35,7 @@ exports.getGames = async (req, res) => {
       filter["parentPlatforms.slug"] = platformFilter;
     }
 
-    console.log(
-      `Page=${page}, Limit=${limit}, Sort=${JSON.stringify(sort)}, Platform=${
-        platformFilter || "all"
-      }`
-    );
+    console.log(`Page=${page}, Limit=${limit}, Sort=${JSON.stringify(sort)}, Platform=${platformFilter || "all"}`);
 
     const [games, total] = await Promise.all([
       Game.find(filter)
@@ -92,9 +89,7 @@ exports.addGame = async (req, res) => {
   // Validate the incoming data using AJV
   const valid = validateGame(gameData);
   if (!valid) {
-    return res
-      .status(400)
-      .json({ message: "Validation failed", errors: validateGame.errors });
+    return res.status(400).json({ message: "Validation failed", errors: validateGame.errors });
   }
 
   try {
@@ -107,9 +102,7 @@ exports.addGame = async (req, res) => {
     res.status(201).json({ message: "Game added successfully", game: newGame });
   } catch (error) {
     console.error(error);
-    return res
-      .status(500)
-      .json({ message: "Error adding game", error: error.message });
+    return res.status(500).json({ message: "Error adding game", error: error.message });
   }
 };
 
@@ -139,9 +132,7 @@ exports.deleteGame = async (req, res) => {
     res.status(200).json({ message: "Game deleted Successfully" });
   } catch (error) {
     console.log(error);
-    return res
-      .status(500)
-      .json({ message: "Failed to delete game", error: error.message });
+    return res.status(500).json({ message: "Failed to delete game", error: error.message });
   }
 };
 
@@ -159,3 +150,68 @@ exports.getGameById = async (req, res) => {
     res.status(500).json({ message: "Error fetching game by rawgId", error });
   }
 };
+
+const API_KEY = "d051469136ff47d4a42aee5ae0a3709f";
+
+// Helper to clean HTML tags from RAWG descriptions
+function cleanDescription(description) {
+  if (!description) return "";
+  return description.replace(/<[^>]*>/g, "").trim();
+}
+
+async function updateDescriptionsFromRawg() {
+  try {
+    let page = 1;
+    let hasMoreGames = true;
+
+    while (hasMoreGames) {
+      const response = await axios.get("https://api.rawg.io/api/games", {
+        params: {
+          key: API_KEY,
+          page,
+          page_size: 20,
+        },
+      });
+
+      const games = response.data.results;
+      hasMoreGames = response.data.next !== null;
+
+      for (const game of games) {
+        try {
+          //  Get full details for accurate description
+          const detailResponse = await axios.get(`https://api.rawg.io/api/games/${game.id}`, {
+            params: { key: API_KEY },
+          });
+
+          const detailedGame = detailResponse.data;
+          const cleanedDescription = cleanDescription(detailedGame.description);
+
+          //  Only update games that exist in your MongoDB
+          const existingGame = await Game.findOne({ rawgId: game.id });
+
+          if (existingGame) {
+            existingGame.description = cleanedDescription;
+            await existingGame.save();
+            console.log(`✅ Updated: ${existingGame.name}`);
+          } else {
+            console.log(`⏭️ Skipped (not in DB): ${game.name}`);
+          }
+        } catch (err) {
+          console.error(`Error processing ${game.name}:`, err.message);
+        }
+      }
+
+      page++; //  Go to next page
+    }
+  } catch (error) {
+    console.error("Error fetching games list:", error.message);
+  }
+}
+
+/* 
+  don't invoke it
+  let it for reference
+
+
+  updateDescriptionsFromRawg();
+*/
