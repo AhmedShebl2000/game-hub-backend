@@ -45,7 +45,7 @@ router.post("/forgot-password", async (req, res) => {
     await user.save();
 
     // Generate the reset link
-    const resetLink = `https://game-hub-backend-woad.vercel.app/api/auth/reset-password/${resetToken}`;
+    const resetLink = `https://game-hub-iti.netlify.app/reset-password/${resetToken}`;
 
     // Send email with the reset link
     await sendResetEmail(user.email, resetLink);
