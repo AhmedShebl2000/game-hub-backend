@@ -85,6 +85,9 @@ const gameItemSchema = new mongoose.Schema(
     shortScreenshots: { type: [screenshotSchema], default: [] },
     trailers: { type: [trailerSchema], default: [] },
 
+    // new field for desc.
+    description: { type: String, default: "" },
+
     // 🔹 New field to track purchases
     purchaseCount: { type: Number, default: 0, min: 0 },
     price: {
