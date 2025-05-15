@@ -35,7 +35,11 @@ exports.getGames = async (req, res) => {
       filter["parentPlatforms.slug"] = platformFilter;
     }
 
-    console.log(`Page=${page}, Limit=${limit}, Sort=${JSON.stringify(sort)}, Platform=${platformFilter || "all"}`);
+    console.log(
+      `Page=${page}, Limit=${limit}, Sort=${JSON.stringify(sort)}, Platform=${
+        platformFilter || "all"
+      }`
+    );
 
     const [games, total] = await Promise.all([
       Game.find(filter)
@@ -89,7 +93,9 @@ exports.addGame = async (req, res) => {
   // Validate the incoming data using AJV
   const valid = validateGame(gameData);
   if (!valid) {
-    return res.status(400).json({ message: "Validation failed", errors: validateGame.errors });
+    return res
+      .status(400)
+      .json({ message: "Validation failed", errors: validateGame.errors });
   }
 
   try {
@@ -102,7 +108,9 @@ exports.addGame = async (req, res) => {
     res.status(201).json({ message: "Game added successfully", game: newGame });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: "Error adding game", error: error.message });
+    return res
+      .status(500)
+      .json({ message: "Error adding game", error: error.message });
   }
 };
 
@@ -132,7 +140,9 @@ exports.deleteGame = async (req, res) => {
     res.status(200).json({ message: "Game deleted Successfully" });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ message: "Failed to delete game", error: error.message });
+    return res
+      .status(500)
+      .json({ message: "Failed to delete game", error: error.message });
   }
 };
 
@@ -179,9 +189,12 @@ async function updateDescriptionsFromRawg() {
       for (const game of games) {
         try {
           //  Get full details for accurate description
-          const detailResponse = await axios.get(`https://api.rawg.io/api/games/${game.id}`, {
-            params: { key: API_KEY },
-          });
+          const detailResponse = await axios.get(
+            `https://api.rawg.io/api/games/${game.id}`,
+            {
+              params: { key: API_KEY },
+            }
+          );
 
           const detailedGame = detailResponse.data;
           const cleanedDescription = cleanDescription(detailedGame.description);

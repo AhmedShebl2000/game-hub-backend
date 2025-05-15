@@ -27,8 +27,8 @@ const sendResetEmail = async (email, resetLink) => {
       from: process.env.EMAIL_USER,
       to: email,
       subject: "Password Reset Request",
-      text: `A7la mesa 3la f5adak ya ryasa 🙋‍♂️ Reset your password using the link: ${resetLink}`,
-      html: `<p>A7la mesa 3la f5adak ya ryasa 🙋‍♂️ Reset your password: <a href="${resetLink}">${resetLink}</a></p>`,
+      text: `Reset your password using the link: ${resetLink}`,
+      html: `<p>Reset your password: <a href="${resetLink}">${resetLink}</a></p>`,
     };
 
     const info = await transporter.sendMail(mailOptions);

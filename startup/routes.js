@@ -7,6 +7,7 @@ const paypal = require("../routes/paypal");
 
 module.exports = function (app) {
   app.use(express.json());
+  app.use(express.urlencoded());
   app.use("/api/users", user);
   app.use("/api/auth", auth);
   app.use("/api/games", game);
