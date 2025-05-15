@@ -3,6 +3,7 @@ const User = require("../models/user");
 const express = require("express");
 const crypto = require("crypto");
 const router = express.Router();
+const jwt = require("jsonwebtoken");
 const { validateLoginRequest } = require("../validation/login.validation");
 const { sendResetEmail } = require("../services/emailService"); // Import the sendResetEmail function
 
@@ -99,6 +100,84 @@ router.post("/reset-password/:token", async (req, res) => {
   await user.save();
 
   res.json({ message: "Password successfully reset." });
+});
+
+// router.post("/google", async (req, res) => {
+//   console.log("Body:", req.body.credential);
+
+//   const credential = req.body.credential;
+//   if (!credential) {
+//     return res.status(400).json({ error: "Credential is missing" });
+//   }
+//   // return res.redirect("http://localhost:4200/home");
+
+//   return res
+//     .status(200)
+//     .json({ message: "Logged in with Google", credential: credential });
+// });
+
+const { OAuth2Client } = require("google-auth-library");
+const client = new OAuth2Client(`${process.env.GOOGLE_CLIENT_ID2}`);
+
+//
+router.post("/google", async (req, res) => {
+  try {
+    const { credential } = req.body;
+
+    // ✅ Log the received credential
+    console.log(
+      "Received credential (first 100 chars):",
+      credential?.substring(0, 100)
+    );
+
+    if (!credential) {
+      return res.status(400).json({ error: "Credential is missing" });
+    }
+
+    // ✅ Log expected audience (your Google Client ID)
+    console.log("Expected audience:", process.env.GOOGLE_CLIENT_ID2);
+
+    // 1. Verify the Google token
+    const ticket = await client.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID2,
+    });
+
+    // 2. Extract user data
+    const payload = ticket.getPayload();
+    console.log("Decoded Google payload:", payload);
+
+    const { email, name, sub: googleId } = payload;
+
+    // 3. Check if user exists in your DB (or create a new one)
+    let user = await User.findOne({ email });
+    if (!user) {
+      user = await User.create({ email, name, googleId });
+      console.log("New user created:", user);
+    } else {
+      console.log("Existing user found:", user);
+    }
+
+    // 4. Generate your own JWT token
+    const token = jwt.sign(
+      { userId: user._id, email: user.email },
+      process.env.SECRET_KEY,
+      { expiresIn: "1h" }
+    );
+
+    // ✅ Log generated token
+    console.log("JWT token generated:", token);
+
+    // 5. Send the token and user data to the frontend
+    res.status(200).json({
+      message: "Logged in with Google",
+      token,
+      user: { email, name },
+    });
+  } catch (error) {
+    console.error("❌ Google auth error:", error);
+    res.status(401).json({ error: "Invalid credential" });
+  }
 });
 
 module.exports = router;
