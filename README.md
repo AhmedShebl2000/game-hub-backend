@@ -166,25 +166,25 @@ All data models are validated using AJV (Another JSON Validator):
 
 - Kareem Ehab
 
-  - GitHub
-  - LinkedIn
+  - [GitHub](https://github.com/KareemEhab)
+  - [LinkedIn](https://www.linkedin.com/in/kareem-hamouda/)
 
 - Youssef Yasser
 
-  - GitHub
-  - LinkedIn
+  - [GitHub](https://github.com/Youssef-Yasser-Mahmoud)
+  - [LinkedIn](https://www.linkedin.com/in/jooyasser/)
 
 - Mahmoud Mohamed
 
-  - GitHub
-  - LinkedIn
+  - [GitHub](https://github.com/mahmoud1mandour)
+  - [LinkedIn](https://www.linkedin.com/in/mahmoud-mandour-m107/)
 
 - Ahmed Shebl
 
-  - GitHub
-  - LinkedIn
+  - [GitHub](https://github.com/AhmedShebl2000)
+  - [LinkedIn](https://www.linkedin.com/in/ahmedshebl16/)
 
 - Youssef Salem
 
-  - GitHub
-  - LinkedIn
+  - [GitHub](https://github.com/YoussefSallem)
+  - [LinkedIn](https://www.linkedin.com/in/yousseffsalem/)
