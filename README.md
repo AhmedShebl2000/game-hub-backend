@@ -172,12 +172,12 @@ All data models are validated using AJV (Another JSON Validator):
 - Youssef Yasser
 
   - [GitHub](https://github.com/Youssef-Yasser-Mahmoud)
-  - [LinkedIn](https://www.linkedin.com/in/jooyasser/)
+  - [LinkedIn](https://www.linkedin.com/in/youssef-yasser-mahmoud/)
 
 - Mahmoud Mohamed
 
   - [GitHub](https://github.com/mahmoud1mandour)
-  - [LinkedIn](https://www.linkedin.com/in/mahmoud-mandour-m107/)
+  - [LinkedIn](https://www.linkedin.com/in/mahmoud1mandour/)
 
 - Ahmed Shebl
 
