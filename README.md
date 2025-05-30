@@ -164,27 +164,62 @@ All data models are validated using AJV (Another JSON Validator):
 
 ## Authors
 
-- Kareem Ehab
-
-  - [GitHub](https://github.com/KareemEhab)
-  - [LinkedIn](https://www.linkedin.com/in/kareem-hamouda/)
-
-- Youssef Yasser
-
-  - [GitHub](https://github.com/Youssef-Yasser-Mahmoud)
-  - [LinkedIn](https://www.linkedin.com/in/youssef-yasser-mahmoud/)
-
-- Mahmoud Mohamed
-
-  - [GitHub](https://github.com/mahmoud1mandour)
-  - [LinkedIn](https://www.linkedin.com/in/mahmoud1mandour/)
-
-- Ahmed Shebl
-
-  - [GitHub](https://github.com/AhmedShebl2000)
-  - [LinkedIn](https://www.linkedin.com/in/ahmedshebl16/)
-
-- Youssef Salem
-
-  - [GitHub](https://github.com/YoussefSallem)
-  - [LinkedIn](https://www.linkedin.com/in/yousseffsalem/)
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://github.com/Youssef-Yasser-Mahmoud">
+        <img
+          src="https://avatars.githubusercontent.com/Youssef-Yasser-Mahmoud"
+          width="100px;"
+          alt="Youssef Yasser"
+        /><br />
+        <sub><b>Youssef Yasser</b></sub> </a
+      ><br />
+      <a href="https://www.linkedin.com/in/youssef-yasser-mahmoud/">LinkedIn</a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/KareemEhab">
+        <img
+          src="https://avatars.githubusercontent.com/KareemEhab"
+          width="100px;"
+          alt="Kareem Ehab"
+        /><br />
+        <sub><b>Kareem Ehab</b></sub> </a
+      ><br />
+      <a href="https://www.linkedin.com/in/kareem-hamouda/">LinkedIn</a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/mahmoud1mandour">
+        <img
+          src="https://avatars.githubusercontent.com/mahmoud1mandour"
+          width="100px;"
+          alt="Mahmoud Mandour"
+        /><br />
+        <sub><b>Mahmoud Mohamed</b></sub> </a
+      ><br />
+      <a href="https://www.linkedin.com/in/mahmoud1mandour/">LinkedIn</a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/AhmedShebl2000">
+        <img
+          src="https://avatars.githubusercontent.com/AhmedShebl2000"
+          width="100px;"
+          alt="Ahmed Shebl"
+        /><br />
+        <sub><b>Ahmed Shebl</b></sub> </a
+      ><br />
+      <a href="https://www.linkedin.com/in/ahmedshebl16/">LinkedIn</a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/YoussefSallem">
+        <img
+          src="https://avatars.githubusercontent.com/YoussefSallem"
+          width="100px;"
+          alt="Youssef Salem"
+        /><br />
+        <sub><b>Youssef Salem</b></sub> </a
+      ><br />
+      <a href="https://www.linkedin.com/in/yousseffsalem/">LinkedIn</a>
+    </td>
+  </tr>
+</table>
